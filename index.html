@@ -518,10 +518,43 @@ const RBAC = {
 };
 
 // ── Estado ────────────────────────────────────────────────
-let currentUser = null;
-let historico   = [];
-let sessions    = [];
+let currentUser      = null;
+let historico        = [];
+let sessions         = [];
 let currentSessionId = null;
+
+// ── localStorage helpers ──────────────────────────────────
+function storageKey(user) {
+  return 'kb_sessions_' + user;
+}
+
+function loadSessions(username) {
+  try {
+    return JSON.parse(localStorage.getItem(storageKey(username)) || '[]');
+  } catch { return []; }
+}
+
+function saveSessions(username, data) {
+  try {
+    localStorage.setItem(storageKey(username), JSON.stringify(data));
+  } catch {}
+}
+
+function saveCurrentSession() {
+  if (!currentUser || !currentSessionId || historico.length === 0) return;
+  const all = loadSessions(currentUser.username);
+  const idx = all.findIndex(s => s.id === currentSessionId);
+  const entry = {
+    id:        currentSessionId,
+    label:     historico.find(m => m.role === 'user')?.content?.slice(0, 80) || 'Conversa',
+    historico: historico,
+    updatedAt: Date.now(),
+  };
+  if (idx >= 0) all[idx] = entry;
+  else all.unshift(entry);
+  // Mantém últimas 30 sessões por usuário
+  saveSessions(currentUser.username, all.slice(0, 30));
+}
 
 // ── Login ─────────────────────────────────────────────────
 function doLogin() {
@@ -547,25 +580,56 @@ function doLogin() {
   document.getElementById('topUserAvatar').textContent = found.nome.charAt(0).toUpperCase();
   document.getElementById('welcomeName').textContent   = found.nome.split(' ')[0];
 
+  // Persiste sessão de login
+  localStorage.setItem('kb_current_user', JSON.stringify(found));
+
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('appScreen').style.display   = 'flex';
 
   checkConfig();
+  renderSessionList();
 }
 
 function doLogout() {
+  localStorage.removeItem('kb_current_user');
   currentUser = null; historico = []; sessions = []; currentSessionId = null;
-  SYMPHONY_TOKEN = '';
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('appScreen').style.display   = 'none';
   document.getElementById('inputUser').value = '';
   document.getElementById('inputPass').value = '';
-  document.getElementById('chatMessages').innerHTML = document.querySelector('.welcome').outerHTML;
+  document.getElementById('historyList').innerHTML = '';
+  resetChatArea();
 }
 
 document.getElementById('inputPass').addEventListener('keydown', e => {
   if (e.key === 'Enter') doLogin();
 });
+
+// Auto-login ao carregar — restaura sessão se usuário já estava logado
+(function autoLogin() {
+  try {
+    const saved = localStorage.getItem('kb_current_user');
+    if (!saved) return;
+    const user = JSON.parse(saved);
+
+    // Valida que o usuário ainda existe e está ativo no RBAC
+    const valid = RBAC.users.find(u => u.username === user.username && u.ativo);
+    if (!valid) { localStorage.removeItem('kb_current_user'); return; }
+
+    currentUser = valid;
+    document.getElementById('perfilSelect').value      = valid.perfil;
+    document.getElementById('topUserName').textContent  = valid.nome;
+    document.getElementById('topUserPerfil').textContent = valid.perfil + ' · ' + valid.empresa;
+    document.getElementById('topUserAvatar').textContent = valid.nome.charAt(0).toUpperCase();
+    document.getElementById('welcomeName').textContent   = valid.nome.split(' ')[0];
+
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display   = 'flex';
+
+    checkConfig();
+    renderSessionList();
+  } catch {}
+})();
 
 // ── Config check ──────────────────────────────────────────
 function checkConfig() {
@@ -612,6 +676,7 @@ async function sendMessage() {
     addMsg('assistant', '⚠ Erro ao consultar o agente: ' + e.message + '\n\nVerifique o token e a conectividade com o Symphony.');
   }
 
+  saveCurrentSession();
   btn.disabled = false;
   input.focus();
 }
@@ -688,28 +753,71 @@ function autoResize(el) {
 // ── Sessões / histórico sidebar ───────────────────────────
 function newChat() {
   historico = []; currentSessionId = null;
-  document.getElementById('chatMessages').innerHTML = '';
   document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
+  resetChatArea();
+}
+
+function resetChatArea() {
+  const chat = document.getElementById('chatMessages');
+  chat.innerHTML = `
+    <div class="welcome" id="welcomeMsg">
+      <div class="welcome-icon">🔍</div>
+      <h2>Olá, <span id="welcomeName">${currentUser?.nome?.split(' ')[0] || ''}</span></h2>
+      <p>Faça perguntas sobre o processo de devolução de clientes.<br>As respostas são baseadas nas regras extraídas dos sistemas PFAT, SISFAT, DevWeb e SAP.</p>
+      <div class="suggestions">
+        <button class="sug" onclick="sendSug(this)">Por que um protocolo pode ficar travado?</button>
+        <button class="sug" onclick="sendSug(this)">O que valida o CFOP na devolução?</button>
+        <button class="sug" onclick="sendSug(this)">Quais sistemas integram com o SAP?</button>
+        <button class="sug" onclick="sendSug(this)">Existe processo manual sem contingência?</button>
+        <button class="sug" onclick="sendSug(this)">O que acontece na ETAPA_40?</button>
+        <button class="sug" onclick="sendSug(this)">Quem pode operar o cockpit de recebimento?</button>
+      </div>
+    </div>`;
 }
 
 function newSessionEntry(firstMsg) {
   currentSessionId = Date.now();
-  const label = firstMsg.slice(0, 60) + (firstMsg.length > 60 ? '…' : '');
-  const id    = currentSessionId;
+  const label = firstMsg.replace(/\[Perfil:[^\]]+\]\n?/, '').slice(0, 60);
+  renderSessionList(currentSessionId);
+}
 
+function renderSessionList(activeId) {
   const list = document.getElementById('historyList');
-  const item = document.createElement('div');
-  item.className   = 'history-item active';
-  item.textContent = label;
-  item.dataset.id  = id;
-  item.onclick     = () => {
-    document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
-    item.classList.add('active');
-  };
+  list.innerHTML = '';
+  const all = loadSessions(currentUser?.username || '');
+  all.forEach(s => {
+    const item = document.createElement('div');
+    item.className   = 'history-item' + (s.id === (activeId ?? currentSessionId) ? ' active' : '');
+    item.textContent = s.label;
+    item.dataset.id  = s.id;
+    item.onclick     = () => loadSession(s.id);
+    list.appendChild(item);
+  });
+}
 
-  list.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
-  list.insertBefore(item, list.firstChild);
-  sessions.push({ id, label });
+function loadSession(id) {
+  const all  = loadSessions(currentUser?.username || '');
+  const sess = all.find(s => s.id === id);
+  if (!sess) return;
+
+  currentSessionId = id;
+  historico        = sess.historico || [];
+
+  const chat = document.getElementById('chatMessages');
+  chat.innerHTML   = '';
+
+  document.querySelectorAll('.history-item').forEach(el => {
+    el.classList.toggle('active', parseInt(el.dataset.id) === id);
+  });
+
+  // Reconstrói mensagens na tela
+  historico.forEach(m => {
+    if (m.role === 'user' || m.role === 'assistant') {
+      // Remove prefixo de perfil para exibição
+      const text = m.content.replace(/\[Perfil:[^\]]+\]\n?/, '');
+      addMsg(m.role, text);
+    }
+  });
 }
 </script>
 </body>
