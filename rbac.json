@@ -1,0 +1,36 @@
+{
+  "users": [
+    {
+      "username": "claudecir",
+      "password": "fcamara2026",
+      "nome": "Claudecir Miranda",
+      "perfil": "TI",
+      "empresa": "FCamara",
+      "ativo": true
+    },
+    {
+      "username": "negocio.sc",
+      "password": "gruposc2026",
+      "nome": "Analista de Negócio",
+      "perfil": "Negócio",
+      "empresa": "Grupo Santa Cruz",
+      "ativo": true
+    },
+    {
+      "username": "operacao.sc",
+      "password": "operacao2026",
+      "nome": "Operador de Devolução",
+      "perfil": "Operação",
+      "empresa": "Grupo Santa Cruz",
+      "ativo": true
+    },
+    {
+      "username": "ti.sc",
+      "password": "tisc2026",
+      "nome": "Analista de TI",
+      "perfil": "TI",
+      "empresa": "Grupo Santa Cruz",
+      "ativo": true
+    }
+  ]
+}

@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Knowledge Base — Devolução de Clientes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --fcamara:      #F26522;
+    --fcamara-dark: #C94E0F;
+    --sc-blue:      #0B3D91;
+    --sc-blue-mid:  #1A5CB8;
+    --sc-blue-light:#EBF1FB;
+    --white:        #FFFFFF;
+    --gray-50:      #F8FAFC;
+    --gray-100:     #F1F5F9;
+    --gray-200:     #E2E8F0;
+    --gray-400:     #94A3B8;
+    --gray-600:     #475569;
+    --gray-800:     #1E293B;
+    --radius:       10px;
+    --shadow:       0 4px 24px rgba(11,61,145,.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--gray-50); color: var(--gray-800); height: 100vh; overflow: hidden; }
+
+  /* ── LOGIN ─────────────────────────────────────────────── */
+  #loginScreen {
+    display: flex; align-items: center; justify-content: center;
+    height: 100vh;
+    background: linear-gradient(135deg, var(--sc-blue) 0%, #0D2E6E 50%, #1a1a2e 100%);
+    position: relative; overflow: hidden;
+  }
+
+  #loginScreen::before {
+    content: '';
+    position: absolute; top: -40%; right: -20%;
+    width: 600px; height: 600px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(242,101,34,.25) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  #loginScreen::after {
+    content: '';
+    position: absolute; bottom: -30%; left: -10%;
+    width: 400px; height: 400px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(26,92,184,.3) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .login-card {
+    background: var(--white);
+    border-radius: 16px;
+    box-shadow: 0 24px 64px rgba(0,0,0,.28);
+    width: 100%; max-width: 420px;
+    overflow: hidden; position: relative; z-index: 1;
+  }
+
+  .login-header {
+    padding: 32px 32px 24px;
+    background: linear-gradient(135deg, var(--sc-blue) 60%, var(--fcamara) 100%);
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+  }
+
+  .logos-row {
+    display: flex; align-items: center; gap: 16px; width: 100%;
+    justify-content: center;
+  }
+
+  .logo-slot {
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 8px;
+    width: 110px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: rgba(255,255,255,.7);
+    letter-spacing: .5px;
+  }
+
+  .logo-divider {
+    width: 2px; height: 32px;
+    background: linear-gradient(to bottom, var(--fcamara), rgba(255,255,255,.2));
+    border-radius: 2px;
+  }
+
+  .login-title {
+    text-align: center;
+  }
+  .login-title h1 {
+    font-size: 17px; font-weight: 700; color: var(--white); letter-spacing: -.2px;
+  }
+  .login-title p {
+    font-size: 12px; color: rgba(255,255,255,.65); margin-top: 4px;
+  }
+
+  .login-body { padding: 28px 32px 32px; }
+
+  .field { margin-bottom: 16px; }
+  .field label { font-size: 12px; font-weight: 600; color: var(--gray-600); display: block; margin-bottom: 6px; }
+  .field input {
+    width: 100%; border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius); padding: 11px 14px;
+    font-size: 14px; font-family: inherit; outline: none;
+    transition: border .15s, box-shadow .15s;
+    color: var(--gray-800);
+  }
+  .field input:focus {
+    border-color: var(--sc-blue);
+    box-shadow: 0 0 0 3px rgba(11,61,145,.10);
+  }
+
+  .btn-login {
+    width: 100%; padding: 13px;
+    background: linear-gradient(135deg, var(--sc-blue) 0%, var(--fcamara) 100%);
+    color: var(--white); border: none; border-radius: var(--radius);
+    font-size: 14px; font-weight: 700; font-family: inherit;
+    cursor: pointer; letter-spacing: .2px;
+    transition: opacity .15s, transform .1s;
+    margin-top: 4px;
+  }
+  .btn-login:hover { opacity: .92; transform: translateY(-1px); }
+  .btn-login:active { transform: translateY(0); }
+
+  .login-error {
+    background: #FEF2F2; border: 1px solid #FECACA;
+    border-radius: 8px; padding: 10px 14px;
+    font-size: 12.5px; color: #DC2626; margin-top: 14px;
+    display: none;
+  }
+
+  .login-footer {
+    text-align: center; margin-top: 20px;
+    font-size: 11px; color: var(--gray-400);
+  }
+
+  /* ── APP ───────────────────────────────────────────────── */
+  #appScreen { display: none; flex-direction: column; height: 100vh; }
+
+  /* Topbar */
+  .topbar {
+    background: var(--sc-blue);
+    display: flex; align-items: center; gap: 0;
+    height: 52px; flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  }
+
+  .topbar-brand {
+    display: flex; align-items: center; gap: 0;
+    height: 100%;
+  }
+
+  .topbar-logo {
+    height: 100%; padding: 0 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: rgba(255,255,255,.7);
+    letter-spacing: .5px; min-width: 120px;
+  }
+  .topbar-logo.fcamara-bg { background: var(--fcamara); color: var(--white); }
+  .topbar-logo.sc-bg { background: var(--sc-blue-mid); }
+
+  .topbar-divider-diag {
+    width: 0; height: 0;
+    border-top: 52px solid var(--fcamara);
+    border-right: 24px solid var(--sc-blue-mid);
+  }
+
+  .topbar-title {
+    flex: 1; padding: 0 20px;
+    font-size: 13px; font-weight: 600; color: rgba(255,255,255,.9);
+    letter-spacing: -.1px;
+  }
+
+  .topbar-user {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 20px; height: 100%;
+  }
+  .user-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--fcamara);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: var(--white);
+  }
+  .user-info { text-align: right; }
+  .user-name { font-size: 12px; font-weight: 600; color: var(--white); }
+  .user-perfil { font-size: 10px; color: rgba(255,255,255,.6); }
+
+  .btn-logout {
+    background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+    color: rgba(255,255,255,.8); border-radius: 6px;
+    padding: 5px 10px; font-size: 11px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+    transition: background .15s;
+  }
+  .btn-logout:hover { background: rgba(255,255,255,.22); }
+
+  /* Layout principal */
+  .app-body { display: flex; flex: 1; overflow: hidden; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 240px; flex-shrink: 0;
+    background: var(--white);
+    border-right: 1px solid var(--gray-200);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sidebar-header {
+    padding: 16px;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .sidebar-header span { font-size: 11px; font-weight: 700; color: var(--gray-400); letter-spacing: .5px; text-transform: uppercase; }
+
+  .btn-new {
+    background: var(--sc-blue); color: var(--white);
+    border: none; border-radius: 6px;
+    padding: 5px 10px; font-size: 11px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+    transition: background .15s;
+  }
+  .btn-new:hover { background: var(--sc-blue-mid); }
+
+  .sidebar-list { flex: 1; overflow-y: auto; padding: 8px; }
+
+  .history-item {
+    padding: 10px 12px; border-radius: 8px;
+    cursor: pointer; font-size: 12px; color: var(--gray-600);
+    margin-bottom: 2px; transition: background .1s;
+    line-height: 1.4;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .history-item:hover { background: var(--gray-100); }
+  .history-item.active { background: var(--sc-blue-light); color: var(--sc-blue); font-weight: 500; }
+
+  .sidebar-perfil {
+    padding: 12px 16px;
+    border-top: 1px solid var(--gray-200);
+  }
+  .sidebar-perfil label { font-size: 11px; font-weight: 600; color: var(--gray-400); display: block; margin-bottom: 6px; }
+  .sidebar-perfil select {
+    width: 100%; border: 1.5px solid var(--gray-200);
+    border-radius: 8px; padding: 7px 10px;
+    font-size: 12px; font-family: inherit;
+    color: var(--gray-800); outline: none;
+    background: var(--white);
+  }
+
+  /* Chat */
+  .chat-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  .chat-messages { flex: 1; overflow-y: auto; padding: 24px; }
+
+  .welcome {
+    text-align: center; padding: 48px 24px;
+    max-width: 560px; margin: 0 auto;
+  }
+  .welcome-icon {
+    width: 56px; height: 56px; border-radius: 14px;
+    background: linear-gradient(135deg, var(--sc-blue), var(--fcamara));
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px; font-size: 24px;
+  }
+  .welcome h2 { font-size: 20px; font-weight: 700; color: var(--sc-blue); margin-bottom: 8px; }
+  .welcome p { font-size: 13px; color: var(--gray-600); line-height: 1.6; margin-bottom: 24px; }
+
+  .suggestions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .sug {
+    background: var(--white); border: 1.5px solid var(--gray-200);
+    border-radius: 20px; padding: 8px 16px;
+    font-size: 12px; cursor: pointer; color: var(--gray-600);
+    transition: all .15s; font-family: inherit;
+  }
+  .sug:hover { border-color: var(--sc-blue); color: var(--sc-blue); background: var(--sc-blue-light); }
+
+  /* Mensagens */
+  .msg { display: flex; margin-bottom: 20px; }
+  .msg.user { justify-content: flex-end; }
+  .msg.assistant { justify-content: flex-start; }
+
+  .bubble {
+    max-width: 72%; padding: 13px 17px;
+    border-radius: 14px; font-size: 13.5px; line-height: 1.65;
+    white-space: pre-wrap;
+  }
+  .msg.user .bubble {
+    background: linear-gradient(135deg, var(--sc-blue), var(--sc-blue-mid));
+    color: var(--white); border-bottom-right-radius: 4px;
+  }
+  .msg.assistant .bubble {
+    background: var(--white); color: var(--gray-800);
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    border: 1px solid var(--gray-200);
+  }
+
+  .msg-meta { font-size: 10px; color: var(--gray-400); margin-top: 5px; padding: 0 4px; }
+
+  /* Typing */
+  .typing { display: flex; gap: 5px; padding: 6px 2px; }
+  .typing span {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--gray-400);
+    animation: bounce 1.2s infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: .15s; }
+  .typing span:nth-child(3) { animation-delay: .3s; }
+  @keyframes bounce {
+    0%,60%,100% { transform: translateY(0); }
+    30% { transform: translateY(-7px); }
+  }
+
+  /* Input */
+  .chat-input-area {
+    flex-shrink: 0;
+    background: var(--white);
+    border-top: 1px solid var(--gray-200);
+    padding: 16px 24px;
+  }
+  .input-row { display: flex; gap: 10px; align-items: flex-end; }
+  .input-row textarea {
+    flex: 1; border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius); padding: 11px 14px;
+    font-size: 13.5px; font-family: inherit;
+    resize: none; outline: none; min-height: 44px; max-height: 120px;
+    color: var(--gray-800); line-height: 1.5;
+    transition: border .15s, box-shadow .15s;
+  }
+  .input-row textarea:focus {
+    border-color: var(--sc-blue);
+    box-shadow: 0 0 0 3px rgba(11,61,145,.08);
+  }
+  .btn-send {
+    width: 44px; height: 44px; border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--sc-blue), var(--fcamara));
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: opacity .15s;
+  }
+  .btn-send:hover { opacity: .88; }
+  .btn-send:disabled { opacity: .45; cursor: default; }
+  .btn-send svg { width: 18px; height: 18px; fill: white; }
+
+  .input-hint { font-size: 10px; color: var(--gray-400); margin-top: 6px; text-align: center; }
+
+  /* Config banner */
+  .config-banner {
+    background: #FEF3C7; border-bottom: 1px solid #FDE68A;
+    padding: 8px 24px; font-size: 11.5px; color: #B45309;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ─────────────────────────────────────────────── -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="logos-row">
+        <div class="logo-slot">FCAMARA</div>
+        <div class="logo-divider"></div>
+        <div class="logo-slot">GRUPO SC</div>
+      </div>
+      <div class="login-title">
+        <h1>Knowledge Base — Devolução</h1>
+        <p>Consulta inteligente às regras de negócio</p>
+      </div>
+    </div>
+    <div class="login-body">
+      <div class="field">
+        <label>Usuário</label>
+        <input type="text" id="inputUser" placeholder="seu.usuario" autocomplete="username" />
+      </div>
+      <div class="field">
+        <label>Senha</label>
+        <input type="password" id="inputPass" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+      <button class="btn-login" onclick="doLogin()">Entrar</button>
+      <div class="login-error" id="loginError">Usuário ou senha incorretos.</div>
+      <div class="login-footer">Acesso restrito — FCamara × Grupo Santa Cruz</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── APP ───────────────────────────────────────────────── -->
+<div id="appScreen">
+
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-logo fcamara-bg">FCAMARA</div>
+      <div class="topbar-divider-diag"></div>
+      <div class="topbar-logo sc-bg">GRUPO SC</div>
+    </div>
+    <div class="topbar-title">Knowledge Base — Devolução de Clientes</div>
+    <div class="topbar-user">
+      <div class="user-info">
+        <div class="user-name" id="topUserName"></div>
+        <div class="user-perfil" id="topUserPerfil"></div>
+      </div>
+      <div class="user-avatar" id="topUserAvatar"></div>
+      <button class="btn-logout" onclick="doLogout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="config-banner" id="configBanner"></div>
+
+  <div class="app-body">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <span>Histórico</span>
+        <button class="btn-new" onclick="newChat()">+ Nova</button>
+      </div>
+      <div class="sidebar-list" id="historyList"></div>
+      <div class="sidebar-perfil">
+        <label>Perfil de consulta</label>
+        <select id="perfilSelect">
+          <option value="">Geral</option>
+          <option value="Negócio">Negócio</option>
+          <option value="TI">TI</option>
+          <option value="Operação">Operação</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Chat -->
+    <div class="chat-area">
+      <div class="chat-messages" id="chatMessages">
+        <div class="welcome" id="welcomeMsg">
+          <div class="welcome-icon">🔍</div>
+          <h2>Olá, <span id="welcomeName"></span></h2>
+          <p>Faça perguntas sobre o processo de devolução de clientes.<br>As respostas são baseadas nas regras extraídas dos sistemas PFAT, SISFAT, DevWeb e SAP.</p>
+          <div class="suggestions">
+            <button class="sug" onclick="sendSug(this)">Por que um protocolo pode ficar travado?</button>
+            <button class="sug" onclick="sendSug(this)">O que valida o CFOP na devolução?</button>
+            <button class="sug" onclick="sendSug(this)">Quais sistemas integram com o SAP?</button>
+            <button class="sug" onclick="sendSug(this)">Existe processo manual sem contingência?</button>
+            <button class="sug" onclick="sendSug(this)">O que acontece na ETAPA_40?</button>
+            <button class="sug" onclick="sendSug(this)">Quem pode operar o cockpit de recebimento?</button>
+          </div>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <div class="input-row">
+          <textarea id="queryInput" rows="1" placeholder="Pergunte sobre o processo de devolução..."
+            oninput="autoResize(this)"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
+          <button class="btn-send" id="btnSend" onclick="sendMessage()">
+            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          </button>
+        </div>
+        <div class="input-hint">Enter para enviar · Shift+Enter para nova linha</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── Configuração Symphony ─────────────────────────────────
+const SYMPHONY_URL      = 'https://symphony.fcamara.com/api/chat/completions';
+const SYMPHONY_ENT_ID   = 'fcamara-0000-0000-0000-000000000001';
+const SYMPHONY_AGENT_ID = 'conhecimento-devoluo-gruposc';
+// Token configurado após login — não exposto no HTML
+let SYMPHONY_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVmMTY1MTBhLWIyMjYtNGQ0MC1iODBmLTVkYTJjZDQyYTBhZSIsImV4cCI6MTc4NDAzODY0NCwiaWF0IjoxNzgzNDMzODQ0fQ.wMt3vRBdXQ8brOrS7OMKDRXEvhNSjES7XpZPfQBYhqM';
+
+// ── RBAC ─────────────────────────────────────────────────
+// Em produção: fetch de rbac.json no servidor. Aqui embutido para Vercel static.
+const RBAC = {
+  users: [
+    { username: "claudecir",   password: "fcamara2026",  nome: "Claudecir Miranda",    perfil: "TI",       empresa: "FCamara",          ativo: true },
+    { username: "negocio.sc",  password: "gruposc2026",  nome: "Analista de Negócio",  perfil: "Negócio",  empresa: "Grupo Santa Cruz", ativo: true },
+    { username: "operacao.sc", password: "operacao2026", nome: "Operador de Devolução", perfil: "Operação", empresa: "Grupo Santa Cruz", ativo: true },
+    { username: "ti.sc",       password: "tisc2026",     nome: "Analista de TI",        perfil: "TI",       empresa: "Grupo Santa Cruz", ativo: true }
+  ]
+};
+
+// ── Estado ────────────────────────────────────────────────
+let currentUser = null;
+let historico   = [];
+let sessions    = [];
+let currentSessionId = null;
+
+// ── Login ─────────────────────────────────────────────────
+function doLogin() {
+  const user = document.getElementById('inputUser').value.trim().toLowerCase();
+  const pass = document.getElementById('inputPass').value;
+  const err  = document.getElementById('loginError');
+
+  const found = RBAC.users.find(u => u.username === user && u.password === pass && u.ativo);
+  if (!found) {
+    err.style.display = 'block';
+    document.getElementById('inputPass').value = '';
+    return;
+  }
+  err.style.display = 'none';
+  currentUser = found;
+
+  // Prefill perfil pelo perfil do usuário
+  document.getElementById('perfilSelect').value = found.perfil;
+
+  // Atualiza topbar
+  document.getElementById('topUserName').textContent  = found.nome;
+  document.getElementById('topUserPerfil').textContent = found.perfil + ' · ' + found.empresa;
+  document.getElementById('topUserAvatar').textContent = found.nome.charAt(0).toUpperCase();
+  document.getElementById('welcomeName').textContent   = found.nome.split(' ')[0];
+
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display   = 'flex';
+
+  checkConfig();
+}
+
+function doLogout() {
+  currentUser = null; historico = []; sessions = []; currentSessionId = null;
+  SYMPHONY_TOKEN = '';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('appScreen').style.display   = 'none';
+  document.getElementById('inputUser').value = '';
+  document.getElementById('inputPass').value = '';
+  document.getElementById('chatMessages').innerHTML = document.querySelector('.welcome').outerHTML;
+}
+
+document.getElementById('inputPass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+// ── Config check ──────────────────────────────────────────
+function checkConfig() {
+  const banner = document.getElementById('configBanner');
+  if (!SYMPHONY_TOKEN) {
+    banner.style.display = 'block';
+    banner.textContent   = '⚠ SYMPHONY_TOKEN não configurado — defina a constante no topo do arquivo antes de usar em produção.';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+// ── Chat ──────────────────────────────────────────────────
+function sendSug(el) {
+  document.getElementById('queryInput').value = el.textContent;
+  sendMessage();
+}
+
+async function sendMessage() {
+  const input   = document.getElementById('queryInput');
+  const pergunta = input.value.trim();
+  if (!pergunta) return;
+
+  document.getElementById('welcomeMsg')?.remove();
+
+  const btn = document.getElementById('btnSend');
+  btn.disabled = true;
+  input.value  = '';
+  input.style.height = 'auto';
+
+  const perfil = document.getElementById('perfilSelect').value;
+
+  addMsg('user', pergunta);
+  addTyping();
+
+  // Adiciona à sessão
+  if (!currentSessionId) newSessionEntry(pergunta);
+
+  const mensagem = perfil ? `[Perfil: ${perfil}]\n${pergunta}` : pergunta;
+  historico.push({ role: 'user', content: mensagem });
+  if (historico.length > 10) historico = historico.slice(-10);
+
+  try {
+    const resposta = await callSymphony(historico);
+    removeTyping();
+    addMsg('assistant', resposta);
+    historico.push({ role: 'assistant', content: resposta });
+  } catch (e) {
+    removeTyping();
+    addMsg('assistant', '⚠ Erro ao consultar o agente: ' + e.message + '\n\nVerifique o token e a conectividade com o Symphony.');
+  }
+
+  btn.disabled = false;
+  input.focus();
+}
+
+async function callSymphony(msgs) {
+  if (!SYMPHONY_TOKEN) throw new Error('SYMPHONY_TOKEN não configurado');
+
+  const r = await fetch(SYMPHONY_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization':   'Bearer ' + SYMPHONY_TOKEN,
+      'Content-Type':    'application/json',
+      'x-enterprise-id': SYMPHONY_ENT_ID,
+    },
+    body: JSON.stringify({
+      model:       SYMPHONY_AGENT_ID,
+      stream:      false,
+      temperature: 0.1,
+      max_tokens:  2000,
+      files:       [],
+      messages:    msgs,
+    })
+  });
+
+  if (!r.ok) {
+    const txt = await r.text();
+    throw new Error(`HTTP ${r.status} — ${txt.slice(0, 200)}`);
+  }
+  const data = await r.json();
+  return data.choices[0].message.content;
+}
+
+// ── UI helpers ────────────────────────────────────────────
+function addMsg(role, text) {
+  const chat = document.getElementById('chatMessages');
+  const div  = document.createElement('div');
+  div.className = 'msg ' + role;
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.textContent = text;
+
+  const meta = document.createElement('div');
+  meta.className = 'msg-meta';
+  meta.textContent = role === 'user'
+    ? currentUser?.nome || 'Você'
+    : 'Agente · Conhecimento Devolução GrupoSC';
+
+  const col = document.createElement('div');
+  col.style.maxWidth = '72%';
+  col.style.display  = 'flex';
+  col.style.flexDirection = 'column';
+  col.appendChild(bubble);
+  col.appendChild(meta);
+
+  div.appendChild(col);
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function addTyping() {
+  const chat = document.getElementById('chatMessages');
+  const div  = document.createElement('div');
+  div.className = 'msg assistant';
+  div.id        = 'typingIndicator';
+  div.innerHTML = '<div class="bubble" style="padding:14px 18px"><div class="typing"><span></span><span></span><span></span></div></div>';
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function removeTyping() {
+  document.getElementById('typingIndicator')?.remove();
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+// ── Sessões / histórico sidebar ───────────────────────────
+function newChat() {
+  historico = []; currentSessionId = null;
+  document.getElementById('chatMessages').innerHTML = '';
+  document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
+}
+
+function newSessionEntry(firstMsg) {
+  currentSessionId = Date.now();
+  const label = firstMsg.slice(0, 60) + (firstMsg.length > 60 ? '…' : '');
+  const id    = currentSessionId;
+
+  const list = document.getElementById('historyList');
+  const item = document.createElement('div');
+  item.className   = 'history-item active';
+  item.textContent = label;
+  item.dataset.id  = id;
+  item.onclick     = () => {
+    document.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
+    item.classList.add('active');
+  };
+
+  list.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
+  list.insertBefore(item, list.firstChild);
+  sessions.push({ id, label });
+}
+</script>
+</body>
+</html>
