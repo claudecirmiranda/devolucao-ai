@@ -9,6 +9,14 @@
       "ativo": true
     },
     {
+      "username": "daniele.ferreira",
+      "password": "ferreira2026",
+      "nome": "Daniele Ferreira",
+      "perfil": "Negócio",
+      "empresa": "FCamara",
+      "ativo": true
+    },
+    {
       "username": "negocio.sc",
       "password": "gruposc2026",
       "nome": "Analista de Negócio",
@@ -30,14 +38,6 @@
       "nome": "Analista de TI",
       "perfil": "TI",
       "empresa": "Grupo Santa Cruz",
-      "ativo": true
-    },
-    {
-      "username": "Daniele.Ferreira",
-      "password": "Ferreira2026",
-      "nome": "Daniele Ferreira",
-      "perfil": "Negócio",
-      "empresa": "FCamara",
       "ativo": true
     }
   ]

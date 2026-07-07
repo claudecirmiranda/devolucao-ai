@@ -458,7 +458,7 @@
       <div class="sidebar-list" id="historyList"></div>
       <div class="sidebar-perfil">
         <label>Perfil de consulta</label>
-        <select id="perfilSelect">
+        <select id="perfilSelect" onchange="updateAgenteBadge()">
           <option value="">Geral</option>
           <option value="Negócio">Negócio</option>
           <option value="TI">TI</option>
@@ -493,7 +493,7 @@
             <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
           </button>
         </div>
-        <div class="input-hint">Enter para enviar · Shift+Enter para nova linha</div>
+        <div class="input-hint">Enter para enviar · Shift+Enter para nova linha · Agente: <span id="agenteBadge">Geral</span></div>
       </div>
     </div>
 
@@ -504,18 +504,30 @@
 // ── Configuração Symphony ─────────────────────────────────
 // Token gerenciado pelo servidor Vercel (variável de ambiente SYMPHONY_TOKEN)
 // Nunca exposto no frontend
-const SYMPHONY_AGENT_ID = 'conhecimento-devoluo-gruposc';
+
+// Agentes por perfil — cada um tem system prompt especializado no Symphony
+const AGENTES = {
+  '':         'conhecimento-devoluo-gruposc',  // Geral
+  'Negócio':  'kb-negocio-gruposc',
+  'TI':       'kb-ti-gruposc',
+  'Operação': 'kb-operacao-gruposc',
+};
 
 // ── RBAC ─────────────────────────────────────────────────
-// Em produção: fetch de rbac.json no servidor. Aqui embutido para Vercel static.
-const RBAC = {
-  users: [
-    { username: "claudecir",   password: "fcamara2026",  nome: "Claudecir Miranda",    perfil: "TI",       empresa: "FCamara",          ativo: true },
-    { username: "negocio.sc",  password: "gruposc2026",  nome: "Analista de Negócio",  perfil: "Negócio",  empresa: "Grupo Santa Cruz", ativo: true },
-    { username: "operacao.sc", password: "operacao2026", nome: "Operador de Devolução", perfil: "Operação", empresa: "Grupo Santa Cruz", ativo: true },
-    { username: "ti.sc",       password: "tisc2026",     nome: "Analista de TI",        perfil: "TI",       empresa: "Grupo Santa Cruz", ativo: true }
-  ]
-};
+// Carregado dinamicamente do rbac.json — edite o arquivo para adicionar/remover usuários
+let RBAC = { users: [] };
+
+async function loadRBAC() {
+  try {
+    const r = await fetch('/rbac.json');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    RBAC = await r.json();
+    // Normaliza usernames para lowercase
+    RBAC.users = RBAC.users.map(u => ({ ...u, username: u.username.toLowerCase() }));
+  } catch (e) {
+    console.error('Erro ao carregar rbac.json:', e);
+  }
+}
 
 // ── Estado ────────────────────────────────────────────────
 let currentUser      = null;
@@ -605,20 +617,22 @@ document.getElementById('inputPass').addEventListener('keydown', e => {
   if (e.key === 'Enter') doLogin();
 });
 
-// Auto-login ao carregar — restaura sessão se usuário já estava logado
-(function autoLogin() {
+// Inicialização — carrega RBAC e tenta auto-login
+(async function init() {
+  await loadRBAC();
+
   try {
     const saved = localStorage.getItem('kb_current_user');
     if (!saved) return;
     const user = JSON.parse(saved);
 
-    // Valida que o usuário ainda existe e está ativo no RBAC
-    const valid = RBAC.users.find(u => u.username === user.username && u.ativo);
+    // Revalida contra o RBAC atualizado
+    const valid = RBAC.users.find(u => u.username === user.username.toLowerCase() && u.ativo);
     if (!valid) { localStorage.removeItem('kb_current_user'); return; }
 
     currentUser = valid;
-    document.getElementById('perfilSelect').value      = valid.perfil;
-    document.getElementById('topUserName').textContent  = valid.nome;
+    document.getElementById('perfilSelect').value        = valid.perfil;
+    document.getElementById('topUserName').textContent   = valid.nome;
     document.getElementById('topUserPerfil').textContent = valid.perfil + ' · ' + valid.empresa;
     document.getElementById('topUserAvatar').textContent = valid.nome.charAt(0).toUpperCase();
     document.getElementById('welcomeName').textContent   = valid.nome.split(' ')[0];
@@ -634,6 +648,12 @@ document.getElementById('inputPass').addEventListener('keydown', e => {
 // ── Config check ──────────────────────────────────────────
 function checkConfig() {
   // Token gerenciado pelo Vercel — nada a verificar no frontend
+}
+
+function updateAgenteBadge() {
+  const perfil = document.getElementById('perfilSelect').value;
+  const badge  = document.getElementById('agenteBadge');
+  if (badge) badge.textContent = perfil || 'Geral';
 }
 
 // ── Chat ──────────────────────────────────────────────────
@@ -682,12 +702,13 @@ async function sendMessage() {
 }
 
 async function callSymphony(msgs) {
-  // Chama a Vercel Function /api/chat que faz proxy para o Symphony
-  // O token fica seguro no servidor — nunca exposto no browser
+  const perfil  = document.getElementById('perfilSelect').value;
+  const agentId = AGENTES[perfil] || AGENTES[''];
+
   const r = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages: msgs })
+    body: JSON.stringify({ messages: msgs, agentId })
   });
 
   if (!r.ok) {
