@@ -31,6 +31,14 @@
       "perfil": "TI",
       "empresa": "Grupo Santa Cruz",
       "ativo": true
+    },
+    {
+      "username": "Daniele.Ferreira",
+      "password": "Ferreira2026",
+      "nome": "Daniele Ferreira",
+      "perfil": "Negócio",
+      "empresa": "FCamara",
+      "ativo": true
     }
   ]
 }
