@@ -361,9 +361,9 @@
   <div class="login-card">
     <div class="login-header">
       <div class="logos-row">
-        <div class="logo-slot">FCAMARA</div>
+        <div class="logo-slot"><img src="/public/img/fcamara.png" alt="FCamara" style="max-height:28px;max-width:90px;object-fit:contain;filter:brightness(0) invert(1);" /></div>
         <div class="logo-divider"></div>
-        <div class="logo-slot">GRUPO SC</div>
+        <div class="logo-slot"><img src="/public/img/gruposc.png" alt="Grupo Santa Cruz" style="max-height:28px;max-width:90px;object-fit:contain;filter:brightness(0) invert(1);" /></div>
       </div>
       <div class="login-title">
         <h1>Knowledge Base — Devolução</h1>
@@ -391,9 +391,9 @@
 
   <div class="topbar">
     <div class="topbar-brand">
-      <div class="topbar-logo fcamara-bg">FCAMARA</div>
+      <div class="topbar-logo fcamara-bg"><img src="/public/img/fcamara.png" alt="FCamara" style="max-height:22px;max-width:90px;object-fit:contain;filter:brightness(0) invert(1);" /></div>
       <div class="topbar-divider-diag"></div>
-      <div class="topbar-logo sc-bg">GRUPO SC</div>
+      <div class="topbar-logo sc-bg"><img src="/public/img/gruposc.png" alt="Grupo Santa Cruz" style="max-height:22px;max-width:90px;object-fit:contain;filter:brightness(0) invert(1);" /></div>
     </div>
     <div class="topbar-title">Knowledge Base — Devolução de Clientes</div>
     <div class="topbar-user">
@@ -463,11 +463,9 @@
 
 <script>
 // ── Configuração Symphony ─────────────────────────────────
-const SYMPHONY_URL      = 'https://symphony.fcamara.com/api/chat/completions';
-const SYMPHONY_ENT_ID   = 'fcamara-0000-0000-0000-000000000001';
+// Token gerenciado pelo servidor Vercel (variável de ambiente SYMPHONY_TOKEN)
+// Nunca exposto no frontend
 const SYMPHONY_AGENT_ID = 'conhecimento-devoluo-gruposc';
-// Token configurado após login — não exposto no HTML
-let SYMPHONY_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVmMTY1MTBhLWIyMjYtNGQ0MC1iODBmLTVkYTJjZDQyYTBhZSIsImV4cCI6MTc4NDAzODY0NCwiaWF0IjoxNzgzNDMzODQ0fQ.wMt3vRBdXQ8brOrS7OMKDRXEvhNSjES7XpZPfQBYhqM';
 
 // ── RBAC ─────────────────────────────────────────────────
 // Em produção: fetch de rbac.json no servidor. Aqui embutido para Vercel static.
@@ -532,13 +530,7 @@ document.getElementById('inputPass').addEventListener('keydown', e => {
 
 // ── Config check ──────────────────────────────────────────
 function checkConfig() {
-  const banner = document.getElementById('configBanner');
-  if (!SYMPHONY_TOKEN) {
-    banner.style.display = 'block';
-    banner.textContent   = '⚠ SYMPHONY_TOKEN não configurado — defina a constante no topo do arquivo antes de usar em produção.';
-  } else {
-    banner.style.display = 'none';
-  }
+  // Token gerenciado pelo Vercel — nada a verificar no frontend
 }
 
 // ── Chat ──────────────────────────────────────────────────
@@ -586,23 +578,12 @@ async function sendMessage() {
 }
 
 async function callSymphony(msgs) {
-  if (!SYMPHONY_TOKEN) throw new Error('SYMPHONY_TOKEN não configurado');
-
-  const r = await fetch(SYMPHONY_URL, {
+  // Chama a Vercel Function /api/chat que faz proxy para o Symphony
+  // O token fica seguro no servidor — nunca exposto no browser
+  const r = await fetch('/api/chat', {
     method: 'POST',
-    headers: {
-      'Authorization':   'Bearer ' + SYMPHONY_TOKEN,
-      'Content-Type':    'application/json',
-      'x-enterprise-id': SYMPHONY_ENT_ID,
-    },
-    body: JSON.stringify({
-      model:       SYMPHONY_AGENT_ID,
-      stream:      false,
-      temperature: 0.1,
-      max_tokens:  2000,
-      files:       [],
-      messages:    msgs,
-    })
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages: msgs })
   });
 
   if (!r.ok) {
