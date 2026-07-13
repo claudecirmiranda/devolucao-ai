@@ -684,7 +684,7 @@ async function sendMessage() {
 
   const mensagem = perfil ? `[Perfil: ${perfil}]\n${pergunta}` : pergunta;
   historico.push({ role: 'user', content: mensagem });
-  if (historico.length > 10) historico = historico.slice(-10);
+  if (historico.length > 6) historico = historico.slice(-6);  // últimas 3 trocas
 
   try {
     const resposta = await callSymphony(historico);
