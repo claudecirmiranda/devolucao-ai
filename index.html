@@ -252,7 +252,7 @@
   /* Chat */
   .chat-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
-  .chat-messages { flex: 1; overflow-y: auto; padding: 24px; }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 16px 24px; }
 
   .welcome {
     text-align: center; padding: 48px 24px;
@@ -278,7 +278,7 @@
 
   /* Mensagens */
   .msg { display: flex; margin-bottom: 20px; }
-  .msg.assistant { width: 100%; }
+  .msg.assistant { width: 100%; padding: 0; }
 
   .bubble {
     max-width: 72%; padding: 13px 17px;
@@ -461,9 +461,9 @@
     }
 
     /* Chat */
-    .chat-messages { padding: 16px 12px; }
+    .chat-messages { padding: 10px 8px; }
     .msg.user .bubble { max-width: 88%; }
-    .msg.assistant .bubble { width: 100%; }
+    .msg.assistant .bubble { width: 100%; box-sizing: border-box; }
     .bubble { font-size: 13px; padding: 11px 14px; }
     .welcome { padding: 32px 16px; }
     .welcome h2 { font-size: 17px; }
@@ -887,7 +887,7 @@ function addMsg(role, text) {
   col.style.display       = 'flex';
   col.style.flexDirection = 'column';
   col.style.width         = role === 'assistant' ? '100%' : 'auto';
-  col.style.maxWidth      = role === 'user' ? '72%' : '100%';
+  col.style.maxWidth      = role === 'user' ? '72%' : 'none';
   col.appendChild(bubble);
   col.appendChild(meta);
 
