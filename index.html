@@ -277,18 +277,22 @@
   .sug:hover { border-color: var(--sc-blue); color: var(--sc-blue); background: var(--sc-blue-light); }
 
   /* Mensagens */
-  .msg { display: flex; margin-bottom: 20px; }
-  .msg.assistant { width: 100%; padding: 0; }
+  .msg { display: flex; margin-bottom: 20px; width: 100%; }
+  .msg.assistant { width: 100%; }
+  .msg.user { justify-content: flex-end; }
 
   .bubble {
-    max-width: 72%; padding: 13px 17px;
+    padding: 13px 17px;
     border-radius: 14px; font-size: 13.5px; line-height: 1.65;
   }
   .msg.user .bubble {
+    max-width: 72%;
     background: linear-gradient(135deg, var(--sc-blue), var(--sc-blue-mid));
     color: var(--white); border-bottom-right-radius: 4px;
+    white-space: pre-wrap;
   }
   .msg.assistant .bubble {
+    flex: 1; min-width: 0; width: 100%;
     background: var(--white); color: var(--gray-800);
     border-bottom-left-radius: 4px;
     box-shadow: 0 2px 8px rgba(0,0,0,.06);
@@ -463,7 +467,7 @@
     /* Chat */
     .chat-messages { padding: 10px 8px; }
     .msg.user .bubble { max-width: 88%; }
-    .msg.assistant .bubble { width: 100%; box-sizing: border-box; }
+    .msg.assistant .bubble { flex: 1; width: 0; min-width: 0; }
     .bubble { font-size: 13px; padding: 11px 14px; }
     .welcome { padding: 32px 16px; }
     .welcome h2 { font-size: 17px; }
@@ -886,8 +890,13 @@ function addMsg(role, text) {
   const col = document.createElement('div');
   col.style.display       = 'flex';
   col.style.flexDirection = 'column';
-  col.style.width         = role === 'assistant' ? '100%' : 'auto';
-  col.style.maxWidth      = role === 'user' ? '72%' : 'none';
+  if (role === 'assistant') {
+    col.style.flex    = '1';
+    col.style.width   = '100%';
+    col.style.minWidth = '0';
+  } else {
+    col.style.maxWidth = '72%';
+  }
   col.appendChild(bubble);
   col.appendChild(meta);
 
