@@ -402,8 +402,18 @@
     background: #FEF2F2; border-color: #FECACA; color: #DC2626;
   }
 
+  /* Mermaid */
+  .mermaid-wrapper { margin: 10px 0; overflow-x: auto; }
+  .mermaid-wrapper svg { max-width: 100%; border-radius: 8px; }
+  .mermaid { background: var(--gray-50); border: 1px solid var(--gray-200);
+    border-radius: 8px; padding: 16px; }
+
+  /* Botão menu — só no mobile */
+  .btn-menu { display: none; }
+
   /* ── MOBILE ─────────────────────────────────────────────── */
   @media (max-width: 768px) {
+    .btn-menu { display: flex; }
 
     /* Login */
     .login-card { margin: 16px; border-radius: 12px; }
@@ -412,10 +422,12 @@
     .logo-slot { width: 90px; height: 36px; font-size: 10px; }
 
     /* Topbar */
-    .topbar { height: 48px; }
-    .topbar-logo { min-width: 80px; padding: 0 12px; font-size: 10px; }
-    .topbar-divider-diag { border-top-width: 48px; border-right-width: 16px; }
-    .topbar-title { font-size: 11px; padding: 0 10px; }
+    .topbar { height: 48px; padding: 0; }
+    .topbar-logo { min-width: 70px; padding: 0 10px; font-size: 9px; }
+    .topbar-logo img { max-height: 18px; max-width: 60px; }
+    .topbar-divider-diag { border-top-width: 48px; border-right-width: 14px; }
+    .topbar-title { font-size: 11px; padding: 0 8px; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis; }
     .topbar-user { gap: 6px; padding: 0 10px; }
     .user-info { display: none; }
     .user-avatar { width: 26px; height: 26px; font-size: 11px; }
@@ -428,13 +440,15 @@
       width: 260px; z-index: 100;
       transition: left .25s ease;
       box-shadow: 4px 0 16px rgba(0,0,0,.15);
+      overflow-y: auto;
     }
     .sidebar.open { left: 0; }
 
     /* Overlay quando sidebar aberta */
     .sidebar-overlay {
       display: none; position: fixed;
-      inset: 0; z-index: 99;
+      top: 48px; left: 0; right: 0; bottom: 0;
+      z-index: 99;
       background: rgba(0,0,0,.3);
     }
     .sidebar-overlay.visible { display: block; }
@@ -462,11 +476,22 @@
     .btn-send { width: 40px; height: 40px; }
     .input-hint { font-size: 9px; }
 
+    /* Mermaid no mobile */
+    .mermaid-wrapper { margin: 8px 0; }
+    .mermaid { padding: 10px; font-size: 11px; }
+
     /* Config banner */
     .config-banner { padding: 6px 12px; font-size: 10.5px; }
   }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({ startOnLoad: false, theme: 'base',
+    themeVariables: { primaryColor: '#EBF1FB', primaryBorderColor: '#0B3D91',
+      primaryTextColor: '#1E293B', lineColor: '#475569', fontSize: '13px' }
+  });
+</script>
 </head>
 <body>
 
@@ -834,6 +859,18 @@ function addMsg(role, text) {
   if (role === 'assistant') {
     bubble.className = 'bubble assistant-bubble';
     bubble.innerHTML = marked.parse(text);
+    // Renderiza blocos mermaid
+    setTimeout(() => {
+      bubble.querySelectorAll('code.language-mermaid').forEach((el, i) => {
+        const parent = el.parentElement; // <pre>
+        const id     = 'mermaid-' + Date.now() + '-' + i;
+        const div    = document.createElement('div');
+        div.className = 'mermaid-wrapper';
+        div.innerHTML = `<div class="mermaid" id="${id}">${el.textContent}</div>`;
+        parent.replaceWith(div);
+        mermaid.run({ nodes: [div.querySelector('.mermaid')] });
+      });
+    }, 0);
   } else {
     bubble.className = 'bubble';
     bubble.textContent = text;
