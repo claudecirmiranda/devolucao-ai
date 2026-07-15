@@ -39,6 +39,96 @@
       "perfil": "TI",
       "empresa": "Grupo Santa Cruz",
       "ativo": true
+    },
+    {
+      "username": "jessika.costa",
+      "password": "gruposc2026",
+      "nome": "Jessika Costa",
+      "perfil": "Negócio",
+      "empresa": "Grupo Santa Cruz",
+      "setor": "Coordenador SAC",
+      "ativo": true
+    },
+    {
+      "username": "paulo.lima",
+      "password": "gruposc2026",
+      "nome": "Paulo Henrique",
+      "perfil": "Operação",
+      "empresa": "Grupo Santa Cruz",
+      "setor": "Analista Devolução",
+      "ativo": true
+    },
+    {
+      "username": "amanda.claro",
+      "password": "gruposc2026",
+      "nome": "Amanda Santana",
+      "perfil": "Negócio",
+      "empresa": "Grupo Santa Cruz",
+      "setor": "Gerente Devolução",
+      "ativo": true
+    },
+    {
+      "username": "camila.cordeiro",
+      "password": "gruposc2026",
+      "nome": "Camila Cordeiro",
+      "perfil": "Operação",
+      "empresa": "Grupo Santa Cruz",
+      "setor": "Analista Devolução",
+      "ativo": true
+    },
+    {
+      "username": "aline.baptista",
+      "password": "gruposc2026",
+      "nome": "Aline Baptista",
+      "perfil": "TI",
+      "empresa": "Grupo Santa Cruz",
+      "setor": "BP TI",
+      "ativo": true
+    },
+    {
+      "username": "marcio.isaias",
+      "password": "gruposc2026",
+      "nome": "Marcio Isaias",
+      "perfil": "TI",
+      "empresa": "Grupo Santa Cruz",
+      "setor": "Coordenador de Sistemas",
+      "ativo": true
+    },
+    {
+      "username": "luis.pasinotto.ext",
+      "password": "gruposc2026",
+      "nome": "Luis Favorito",
+      "perfil": "TI",
+      "empresa": "Grupo Santa Cruz",
+      "setor": "Analista Sistemas",
+      "ativo": true
+    },
+    {
+      "username": "andreluiz.oliveira",
+      "password": "gruposc2026",
+      "nome": "Andre Luis",
+      "perfil": "TI",
+      "empresa": "Grupo Santa Cruz",
+      "setor": "Analista Sistemas",
+      "ativo": true
+    },
+    {
+      "username": "erika.ishida",
+      "password": "gruposc2026",
+      "nome": "Erika Keiko",
+      "perfil": "TI",
+      "empresa": "Grupo Santa Cruz",
+      "setor": "Analista Sistemas",
+      "ativo": true
+    },
+    {
+      "username": "ricardo.nascimento",
+      "password": "gruposc2026",
+      "nome": "Ricardo Rockenbach",
+      "perfil": "TI",
+      "empresa": "Grupo Santa Cruz",
+      "setor": "Gerente Sistemas",
+      "ativo": true
     }
   ]
 }
