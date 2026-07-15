@@ -286,7 +286,7 @@
     border-radius: 14px; font-size: 13.5px; line-height: 1.65;
   }
   .msg.user .bubble {
-    max-width: 72%;
+    flex: 1; min-width: 0; width: 100%;
     background: linear-gradient(135deg, var(--sc-blue), var(--sc-blue-mid));
     color: var(--white); border-bottom-right-radius: 4px;
     white-space: pre-wrap;
@@ -416,6 +416,8 @@
 
   /* ── MOBILE ─────────────────────────────────────────────── */
   @media (max-width: 768px) {
+
+    /* Botão menu */
     .btn-menu { display: flex; }
 
     /* Login */
@@ -425,68 +427,64 @@
     .logo-slot { width: 90px; height: 36px; font-size: 10px; }
 
     /* Topbar */
-    .topbar { height: 48px; padding: 0; }
+    .topbar { height: 48px; }
     .topbar-logo { min-width: 70px; padding: 0 10px; font-size: 9px; }
     .topbar-logo img { max-height: 18px; max-width: 60px; }
     .topbar-divider-diag { border-top-width: 48px; border-right-width: 14px; }
-    .topbar-title { font-size: 11px; padding: 0 8px; white-space: nowrap;
-      overflow: hidden; text-overflow: ellipsis; }
+    .topbar-title { font-size: 11px; padding: 0 8px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .topbar-user { gap: 6px; padding: 0 10px; }
     .user-info { display: none; }
     .user-avatar { width: 26px; height: 26px; font-size: 11px; }
     .btn-logout { padding: 4px 8px; font-size: 10px; }
 
-    /* Layout — sidebar oculta no mobile, vira drawer */
+    /* Sidebar — drawer */
     .app-body { position: relative; }
     .sidebar {
       position: fixed; left: -260px; top: 48px; bottom: 0;
-      width: 260px; z-index: 100;
+      width: 260px; z-index: 100; overflow-y: auto;
       transition: left .25s ease;
       box-shadow: 4px 0 16px rgba(0,0,0,.15);
-      overflow-y: auto;
     }
     .sidebar.open { left: 0; }
-
-    /* Overlay quando sidebar aberta */
     .sidebar-overlay {
       display: none; position: fixed;
       top: 48px; left: 0; right: 0; bottom: 0;
-      z-index: 99;
-      background: rgba(0,0,0,.3);
+      z-index: 99; background: rgba(0,0,0,.3);
     }
     .sidebar-overlay.visible { display: block; }
 
-    /* Botão hamburguer no topbar */
-    .btn-menu {
-      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
-      color: white; border-radius: 6px; padding: 5px 8px;
-      font-size: 16px; cursor: pointer; line-height: 1;
-      margin-left: 8px; order: -1;
+    /* Chat — ocupa toda a tela */
+    .chat-area { width: 100%; }
+    .chat-messages { padding: 12px 10px; }
+
+    /* Mensagens — largura total */
+    .msg { width: 100%; }
+    .msg.user .bubble,
+    .msg.assistant .bubble {
+      flex: 1; min-width: 0; width: 100%;
+      font-size: 13px; padding: 11px 12px;
     }
 
-    /* Chat */
-    .chat-messages { padding: 10px 8px; }
-    .msg.user .bubble { max-width: 88%; }
-    .msg.assistant .bubble { flex: 1; width: 0; min-width: 0; }
-    .bubble { font-size: 13px; padding: 11px 14px; }
-    .welcome { padding: 32px 16px; }
-    .welcome h2 { font-size: 17px; }
+    /* Welcome */
+    .welcome { padding: 24px 12px; }
+    .welcome h2 { font-size: 16px; }
     .welcome p { font-size: 12px; }
     .suggestions { gap: 6px; }
-    .sug { font-size: 11px; padding: 7px 13px; }
+    .sug { font-size: 11px; padding: 6px 12px; }
 
     /* Input */
-    .chat-input-area { padding: 10px 12px; }
+    .chat-input-area { padding: 10px 10px; }
     .input-row textarea { font-size: 13px; padding: 10px 12px; }
     .btn-send { width: 40px; height: 40px; }
     .input-hint { font-size: 9px; }
 
-    /* Mermaid no mobile */
-    .mermaid-wrapper { margin: 8px 0; }
+    /* Mermaid */
+    .mermaid-wrapper { margin: 8px 0; overflow-x: auto; }
     .mermaid { padding: 10px; font-size: 11px; }
 
     /* Config banner */
-    .config-banner { padding: 6px 12px; font-size: 10.5px; }
+    .config-banner { padding: 6px 10px; font-size: 10.5px; }
   }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
